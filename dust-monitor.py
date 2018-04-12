@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-11 21:12:23 +0200
+# Last modified: 2018-04-12 09:27:45 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -22,11 +22,24 @@ import struct
 import time
 import serial
 
-ft232h = serial.Serial('/dev/cuaU0', 9600, timeout=1)
-datafile = open('/tmp/air-monitor.d', 'w')
-
 now = datetime.utcnow().strftime('%FT%TZ')
+
+ft232h = serial.Serial('/dev/cuaU0', 9600, timeout=1)
+datafile = open('/tmp/dust-monitor-{}.d'.format(now), 'w')
+
+# Write datafile header.
 datafile.write('# PMS5003 data.\n# Started monitoring at {}.\n'.format(now))
+datafile.write('# Per line, the data items are:\n')
+datafile.write('# * UTC date and time in ISO8601 format\n')
+datafile.write('# * PM 1.0 in μg/m³\n')
+datafile.write('# * PM 2.5 in μg/m³\n')
+datafile.write('# * PM 10 in μg/m³\n')
+datafile.write('# * number of particles > 0.3 μm per dm³ of air\n')
+datafile.write('# * number of particles > 0.5 μm per dm³ of air\n')
+datafile.write('# * number of particles > 1.0 μm per dm³ of air\n')
+datafile.write('# * number of particles > 2.5 μm per dm³ of air\n')
+datafile.write('# * number of particles >   5 μm per dm³ of air\n')
+datafile.write('# * number of particles >  10 μm per dm³ of air\n')
 datafile.flush()
 
 while True:
@@ -40,19 +53,19 @@ while True:
     try:
         numbers = struct.unpack('>xxxxHHHHHHHHHHHHHH', data)
     except struct.error:
-        datafile.write('# ' + now + 'unpack error')
+        datafile.write('# ' + now + 'unpack error\n')
         datafile.flush()
         continue
     cksum = sum(data[0:30])
     if cksum != numbers[-1]:
-        datafile.write('# ' + now + 'checksum error')
+        datafile.write('# ' + now + 'checksum error\n')
         datafile.flush()
         continue
     (pm10std, pm25std, pm100std, pm10env, pm25env, pm100env) = numbers[0:6]
     part100 = numbers[11]
     counts = numbers[6:-2]
     brackets = tuple(round((counts[j] - sum(counts[j+1:]))*10) for j in range(6))
-    items = numbers[:3] + brackets[:5] + (part100,)
+    items = numbers[3:6] + brackets[:5] + (part100,)
     line = now + ' '.join(str(num) for num in items) + '\n'
 #    print(line, end='')
     datafile.write(line)
