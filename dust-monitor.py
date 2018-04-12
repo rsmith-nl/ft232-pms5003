@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-12 12:38:11 +0200
+# Last modified: 2018-04-12 16:43:35 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -57,34 +57,37 @@ def main(argv):
     datafile.flush()
 
     # Read and write the data.
-    while True:
-        data = ft232h.read(32)
-        skip = data.find(b'\x42\x4d')
-        if skip > 0:
-            ft232h.read(skip)  # Skip to next block to synchonize.
-            time.sleep(0.5)
-            continue
-        now = datetime.utcnow().strftime('%FT%TZ ')
-        try:
-            numbers = struct.unpack('>xxxxHHHHHHHHHHHHHH', data)
-        except struct.error:
-            datafile.write('# ' + now + 'unpack error\n')
+    try:
+        while True:
+            data = ft232h.read(32)
+            skip = data.find(b'\x42\x4d')
+            if skip > 0:
+                ft232h.read(skip)  # Skip to next block to synchonize.
+                time.sleep(0.5)
+                continue
+            now = datetime.utcnow().strftime('%FT%TZ ')
+            try:
+                numbers = struct.unpack('>xxxxHHHHHHHHHHHHHH', data)
+            except struct.error:
+                datafile.write('# ' + now + 'unpack error\n')
+                datafile.flush()
+                continue
+            cksum = sum(data[0:30])
+            if cksum != numbers[-1]:
+                datafile.write('# ' + now + 'checksum error\n')
+                datafile.flush()
+                continue
+            (pm10std, pm25std, pm100std, pm10env, pm25env, pm100env) = numbers[0:6]
+            part100 = numbers[11]
+            counts = numbers[6:-2]
+            brackets = tuple(round((counts[j] - sum(counts[j+1:]))*10) for j in range(6))
+            items = numbers[3:6] + brackets[:5] + (part100,)
+            line = now + ' '.join(str(num) for num in items) + '\n'
+            datafile.write(line)
             datafile.flush()
-            continue
-        cksum = sum(data[0:30])
-        if cksum != numbers[-1]:
-            datafile.write('# ' + now + 'checksum error\n')
-            datafile.flush()
-            continue
-        (pm10std, pm25std, pm100std, pm10env, pm25env, pm100env) = numbers[0:6]
-        part100 = numbers[11]
-        counts = numbers[6:-2]
-        brackets = tuple(round((counts[j] - sum(counts[j+1:]))*10) for j in range(6))
-        items = numbers[3:6] + brackets[:5] + (part100,)
-        line = now + ' '.join(str(num) for num in items) + '\n'
-        datafile.write(line)
-        datafile.flush()
-        time.sleep(args.interval)
+            time.sleep(args.interval)
+    except (serial.serialutil.SerialException, KeyboardInterrupt):
+        sys.exit(1)
 
 
 def process_arguments(argv):
@@ -106,7 +109,8 @@ def process_arguments(argv):
     parser.add_argument(
         'path',
         nargs=1,
-        help=r'path template for the data file. Should contain {}.')
+        help=r'path template for the data file. Should contain {}. '
+             r'For example "/tmp/dust-monitor-{}.d"')
     args = parser.parse_args(argv)
     args.path = args.path[0]
     if not args.path or r'{}' not in args.path:
