@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-12 09:27:45 +0200
+# Last modified: 2018-04-12 10:05:02 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -34,12 +34,12 @@ datafile.write('# * UTC date and time in ISO8601 format\n')
 datafile.write('# * PM 1.0 in μg/m³\n')
 datafile.write('# * PM 2.5 in μg/m³\n')
 datafile.write('# * PM 10 in μg/m³\n')
-datafile.write('# * number of particles > 0.3 μm per dm³ of air\n')
-datafile.write('# * number of particles > 0.5 μm per dm³ of air\n')
-datafile.write('# * number of particles > 1.0 μm per dm³ of air\n')
-datafile.write('# * number of particles > 2.5 μm per dm³ of air\n')
-datafile.write('# * number of particles >   5 μm per dm³ of air\n')
-datafile.write('# * number of particles >  10 μm per dm³ of air\n')
+datafile.write('# * number of particles 0.3 - 0.5 μm per dm³ of air\n')
+datafile.write('# * number of particles 0.5 - 1.0 μm per dm³ of air\n')
+datafile.write('# * number of particles 1.0 - 2.5 μm per dm³ of air\n')
+datafile.write('# * number of particles 2.5 -   5 μm per dm³ of air\n')
+datafile.write('# * number of particles   5 -  10 μm per dm³ of air\n')
+datafile.write('# * number of particles     >  10 μm per dm³ of air\n')
 datafile.flush()
 
 while True:
