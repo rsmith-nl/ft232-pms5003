@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-12 16:43:35 +0200
+# Last modified: 2018-04-12 18:54:45 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -72,17 +72,24 @@ def main(argv):
                 datafile.write('# ' + now + 'unpack error\n')
                 datafile.flush()
                 continue
+            # The data-sheet says "Low 8 bits" in the checksum calculation.
+            # But looking at the numbers that doesn't match. It looks like
+            # that is a typo?
             cksum = sum(data[0:30])
             if cksum != numbers[-1]:
-                datafile.write('# ' + now + 'checksum error\n')
+                cserr = '# checksum mismatch!'
                 datafile.flush()
-                continue
-            (pm10std, pm25std, pm100std, pm10env, pm25env, pm100env) = numbers[0:6]
+            else:
+                cserr = ''
             part100 = numbers[11]
             counts = numbers[6:-2]
+            # The counts are for particles >0.3 μm, >0.5 μm, >1 μm, >2.5 μm, >5 μm, >10 μm.
+            # If we take the first count and substract the sum of the other counts, we
+            # end up with the number of particles 0.3-0.5 μm per 0.1 dm³. Multiply by 10 to
+            # get the count per dm³.
             brackets = tuple(round((counts[j] - sum(counts[j+1:]))*10) for j in range(6))
             items = numbers[3:6] + brackets[:5] + (part100,)
-            line = now + ' '.join(str(num) for num in items) + '\n'
+            line = now + ' '.join(str(num) for num in items) + cserr + '\n'
             datafile.write(line)
             datafile.flush()
             time.sleep(args.interval)
