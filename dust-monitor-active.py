@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-13 13:05:40 +0200
+# Last modified: 2018-04-13 19:41:13 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -15,6 +15,11 @@ The sensor is connected to the computer via an FT232H, used as a serial to
 USB converter.
 
 This program runs the sensor in its default active mode. It logs the data to a file.
+
+In the author's experience, the PMS5003 started producing nonsense values (that fail checksum) after
+several hours of operation. A reset solves this problem. In the author's opinion it is therefore
+preferable to use passive mode, unless one needs a lot of measurements in a limited time (say an
+hour or two).
 """
 
 from datetime import datetime
