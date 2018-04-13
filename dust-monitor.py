@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-12 23:17:00 +0200
+# Last modified: 2018-04-13 09:31:53 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -77,10 +77,9 @@ def main(argv):
             # that is a typo?
             cksum = sum(data[0:30])
             if cksum != numbers[-1]:
-                datafile.write('# checksum mismatch, retrying in 5 seconds...\n')
-                datafile.flush()
-                time.sleep(5)
-                continue
+                cserr = '# checksum mismatch'
+            else:
+                cserr = ''
             part100 = numbers[11]
             counts = numbers[6:-2]
             # The counts are for particles >0.3 μm, >0.5 μm, >1 μm, >2.5 μm, >5 μm, >10 μm.
@@ -89,7 +88,7 @@ def main(argv):
             # get the count per dm³.
             brackets = tuple(round((counts[j] - sum(counts[j+1:]))*10) for j in range(6))
             items = numbers[3:6] + brackets[:5] + (part100,)
-            line = now + ' '.join(str(num) for num in items) + '\n'
+            line = now + ' '.join(str(num) for num in items) + cserr + '\n'
             datafile.write(line)
             datafile.flush()
             time.sleep(args.interval)
