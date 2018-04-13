@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# file: air-monitor.py
+# file: dust-monitor-passive.py
 # vim:fileencoding=utf-8:fdm=marker:ft=python
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-13 12:10:08 +0200
+# Last modified: 2018-04-13 13:22:49 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -14,7 +14,8 @@ Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
 USB converter.
 
-Logs the data to a file.
+This runs the sensor in passive mode. Note that for passive mode,
+both TX and RX must be connected! It logs the data to a file.
 """
 
 from datetime import datetime
@@ -24,12 +25,12 @@ import sys
 import time
 import serial
 
-__version__ = '1.0'
+__version__ = '0.1'
 
 
 def main(argv):
     """
-    Entry point for dust-monitor.py.
+    Entry point for dust-monitor-passive.py
 
     Arguments:
         argv: command line arguments
@@ -41,8 +42,13 @@ def main(argv):
     ft232h = serial.Serial(args.port, 9600, timeout=1)
     datafile = open(args.path.format(now), 'w')
 
+    # Set the sensor to passive mode.
+    ft232h.write(b'\x42\x4d\xe1\x00\x00\x01\x70')
+    # Drop all exesting active mode data.
+    ft232h.flushInput()
+
     # Write datafile header.
-    datafile.write('# PMS5003 data.\n# Started monitoring at {}.\n'.format(now))
+    datafile.write('# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n'.format(now))
     datafile.write('# Per line, the data items are:\n')
     datafile.write('# * UTC date and time in ISO8601 format\n')
     datafile.write('# * PM 1.0 in μg/m³\n')
@@ -59,13 +65,15 @@ def main(argv):
     # Read and write the data.
     try:
         while True:
+            # Request data
+            ft232h.write(b'\x42\x4d\xe2\x00\x00\x01\x71')
+            # Read data
             data = ft232h.read(32)
-            skip = data.find(b'\x42\x4d')
-            if skip > 0:
-                ft232h.read(skip)  # Skip to next block to synchonize.
-                time.sleep(0.5)
-                continue
             now = datetime.utcnow().strftime('%FT%TZ ')
+            if len(data) != 32 and not data.startswith(b'BM'):
+                datafile.write('# ' + now + 'read error\n')
+                datafile.flush()
+                continue
             try:
                 numbers = struct.unpack('>HHHHHHHHHHHHHHHH', data)
             except struct.error:
@@ -103,9 +111,9 @@ def process_arguments(argv):
     parser.add_argument(
         '-i',
         '--interval',
-        default=300,
+        default=5,
         type=int,
-        help='interval between measurements (≥5 s, default 300 s)')
+        help='interval between measurements (≥5 s, default 5 s)')
     parser.add_argument(
         '-v', '--version', action='version', version=__version__)
     parser.add_argument(
