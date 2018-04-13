@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-13 09:31:53 +0200
+# Last modified: 2018-04-13 09:35:49 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -77,7 +77,7 @@ def main(argv):
             # that is a typo?
             cksum = sum(data[0:30])
             if cksum != numbers[-1]:
-                cserr = '# checksum mismatch'
+                cserr = ' # checksum mismatch'
             else:
                 cserr = ''
             part100 = numbers[11]
@@ -91,6 +91,8 @@ def main(argv):
             line = now + ' '.join(str(num) for num in items) + cserr + '\n'
             datafile.write(line)
             datafile.flush()
+            if cserr:
+                continue
             time.sleep(args.interval)
     except (serial.serialutil.SerialException, KeyboardInterrupt):
         sys.exit(1)
