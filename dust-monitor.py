@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-13 19:49:21 +0200
+# Last modified: 2018-04-13 21:15:46 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -25,7 +25,7 @@ import sys
 import time
 import serial
 
-__version__ = '0.1'
+__version__ = '1.0'
 
 
 def main(argv):
