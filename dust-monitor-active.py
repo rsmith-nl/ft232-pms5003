@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-13 12:10:08 +0200
+# Last modified: 2018-04-13 13:05:40 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -14,7 +14,7 @@ Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
 USB converter.
 
-Logs the data to a file.
+This program runs the sensor in its default active mode. It logs the data to a file.
 """
 
 from datetime import datetime
@@ -103,9 +103,9 @@ def process_arguments(argv):
     parser.add_argument(
         '-i',
         '--interval',
-        default=300,
+        default=5,
         type=int,
-        help='interval between measurements (≥5 s, default 300 s)')
+        help='interval between measurements (≥5 s, default 5 s)')
     parser.add_argument(
         '-v', '--version', action='version', version=__version__)
     parser.add_argument(
