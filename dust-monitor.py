@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# file: dust-monitor-passive.py
+# file: dust-monitor.py
 # vim:fileencoding=utf-8:fdm=marker:ft=python
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-13 13:22:49 +0200
+# Last modified: 2018-04-13 19:49:21 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -30,7 +30,7 @@ __version__ = '0.1'
 
 def main(argv):
     """
-    Entry point for dust-monitor-passive.py
+    Entry point for dust-monitor.py
 
     Arguments:
         argv: command line arguments
