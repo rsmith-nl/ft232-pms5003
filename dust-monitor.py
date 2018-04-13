@@ -4,7 +4,7 @@
 #
 # Author: R.F. Smith <rsmith@xs4all.nl>
 # Created: 2018-04-11 18:52:43 +0200
-# Last modified: 2018-04-13 10:25:14 +0200
+# Last modified: 2018-04-13 11:20:14 +0200
 #
 # To the extent possible under law, R.F. Smith has waived all copyright and
 # related or neighboring rights to air-monitor.py. This work is published
@@ -19,7 +19,6 @@ Logs the data to a file.
 
 from datetime import datetime
 import argparse
-import binascii
 import struct
 import sys
 import time
@@ -93,8 +92,7 @@ def main(argv):
             datafile.write(line)
             if cserr:
                 # Append the raw data to the file, so we can check it out.
-                raw = ' '.join(binascii.hexlify(data[j:j+2]).decode('ascii').upper()
-                               for j in range(0, 32, 2))
+                raw = ' '.join(str(j) for j in numbers)
                 datafile.write('# ' + raw + '\n')
             datafile.flush()
             if cserr:
