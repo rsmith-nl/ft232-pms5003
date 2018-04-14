@@ -1,11 +1,11 @@
-Using the PMS5003 particulate matter with Python 3
-##################################################
+Using the PMS5003 particulate matter sensor with Python 3
+#########################################################
 
 :date: 2018-04-14
 :tags: PMS5003, Python 3, FT232H
 :author: Roland Smith
 
-.. Last modified: 2018-04-14 23:56:03 +0200
+.. Last modified: 2018-04-15 00:04:10 +0200
 
 Introduction
 ------------
@@ -14,10 +14,10 @@ The ``dust-monitor.py`` program allows you to read and log particulate matter
 (“PM”) data from the plantower PMS5003 sensor on computer. I bought mine from
 a local Adafruit reseller.
 
-The PMS5003 outputs data over a serial connection. I've used an FTDI232H
+The PMS5003 outputs data over a serial connection. I've used an FT232H
 serial ↔ USB bridge to connect it to my PC. This device shows up on my
 (FreeBSD) machine as ``/dev/cuaU*``, but this will vary based on the OS used.
-On ms-windows you might need to install a driver for the FTDI232H.
+On ms-windows you might need to install a driver for the FT232H.
 
 Except from the hardware, this program uses the pyserial_ module to connect to
 the device.
@@ -43,8 +43,8 @@ main options are:
   5 s, which is also the minimum interval.
 
 There is one *required* argument, which is a filename template. This template
-should contain *one* ``{}``-pair, which will be replaced by the full ISO8601
-notation of the UTC datetime when the program was started. This serves to make
+should contain *one* ``{}``-pair, which will be replaced by the full ISO-8601
+notation of the UTC date and time when the program was started. This serves to make
 the filenames unique and as a reminder.
 
 An example:
@@ -68,10 +68,10 @@ like this::
 
     2018-04-13T15:21:54Z 11 14 17 2154 604 82 4 4 2
 
-Each line is a single data point. The columns are seperated by spaces. Apart
+Each line is a single data point. The columns are separated by spaces. Apart
 from the first column, all columns are unsigned integers. The meaning of the columns is:
 
-* UTC date and time in ISO8601 format
+* UTC date and time in ISO-8601 format
 * PM 1.0 in μg/m³
 * PM 2.5 in μg/m³
 * PM 10 in μg/m³
@@ -105,5 +105,3 @@ an example how to read the data in Python with numpy.
     part25 = columns[6]
     part50 = columns[7]
     part100 = columns[8]
-
-
