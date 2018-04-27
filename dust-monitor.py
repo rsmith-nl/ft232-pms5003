@@ -5,7 +5,7 @@
 # Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>.
 # SPDX-License-Identifier: MIT
 # Created: 2018-04-11T18:52:43 +0200
-# Last modified: 2018-04-17T00:31:26+0200
+# Last modified: 2018-04-27T13:45:45+0200
 """
 Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
@@ -45,7 +45,9 @@ def main(argv):
     ft232h.flushInput()
 
     # Write datafile header.
-    datafile.write('# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n'.format(now))
+    datafile.write(
+        '# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n'.format(
+            now))
     datafile.write('# Per line, the data items are:\n')
     datafile.write('# * UTC date and time in ISO8601 format\n')
     datafile.write('# * PM 1.0 in μg/m³\n')
@@ -117,7 +119,7 @@ def process_arguments(argv):
         'path',
         nargs=1,
         help=r'path template for the data file. Should contain {}. '
-             r'For example "/tmp/dust-monitor-{}.d"')
+        r'For example "/tmp/dust-monitor-{}.d"')
     args = parser.parse_args(argv)
     args.path = args.path[0]
     if not args.path or r'{}' not in args.path:
