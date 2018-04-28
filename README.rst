@@ -1,11 +1,11 @@
 Using the PMS5003 particulate matter sensor with Python 3
 #########################################################
 
-:date: 2018-04-14
+:date: 2018-04-28
 :tags: PMS5003, Python 3, FT232H
 :author: Roland Smith
 
-.. Last modified: 2018-04-15 00:04:10 +0200
+.. Last modified: 2018-04-28T10:59:55+0200
 
 Introduction
 ------------
@@ -15,14 +15,19 @@ The ``dust-monitor.py`` program allows you to read and log particulate matter
 a local Adafruit reseller.
 
 The PMS5003 outputs data over a serial connection. I've used an FT232H
-serial ↔ USB bridge to connect it to my PC. This device shows up on my
-(FreeBSD) machine as ``/dev/cuaU*``, but this will vary based on the OS used.
-On ms-windows you might need to install a driver for the FT232H.
+serial ↔ USB bridge to connect it to my PC.
 
-Except from the hardware, this program uses the pyserial_ module to connect to
-the device.
+Except from the hardware, this program uses the pyftdi_ module to connect to
+the device. This module in turn requires pyserial_ and pyusb_.
 
+.. _pyftdi: https://github.com/eblot/pyftdi
+.. _pyusb: https://github.com/pyusb/pyusb
 .. _pyserial: https://github.com/pyserial/pyserial
+
+Note that for this to work, any *native* driver for FTDI chips needs to be
+unloaded. On FreeBSD this is accomplished by commenting out the ``nomatch``
+statement in ``/etc/devd/usb.conf`` that loads ``uftdi`` driver and restarting
+``devd``.
 
 This program has been written for Python 3 on the FreeBSD operating system
 version 11.1. I expect it will work on other POSIX systems, and maybe even on
@@ -51,12 +56,12 @@ An example:
 
 .. code-block:: console
 
-    ./dust-monitor.py -p /dev/cuaU1 -i 10 '/tmp/pmdata-{}.txt'
+    ./dust-monitor.py -p ftdi://ftdi:232h/2 -i 900 '/tmp/pmdata-{}.txt'
 
-The program would open the ``/dev/cuaU1`` device to read data every ten
-seconds. The data would be written to
-``/tmp/pmdata-2018-04-14T21:39:59Z.txt``, where the datetime is just an
-example.
+The program would open the ``ftdi://ftdi:232h/2`` device (the second FT232H
+connected to the system) to read data every fifteen minutes. The data would be
+written to ``/tmp/pmdata-2018-04-14T21:39:59Z.txt``, where the datetime is
+just an example.
 
 
 Data
@@ -72,9 +77,9 @@ Each line is a single data point. The columns are separated by spaces. Apart
 from the first column, all columns are unsigned integers. The meaning of the columns is:
 
 * UTC date and time in ISO-8601 format
-* PM 1.0 in μg/m³
-* PM 2.5 in μg/m³
-* PM 10 in μg/m³
+* PM 1.0 in μg/m³ [i.e particles ≤ 1 μm]
+* PM 2.5 in μg/m³ [particles ≤ 2.5 μm]
+* PM 10 in μg/m³ [particles ≤ 10 μm]
 * number of particles >0.3 μm / 0.1 dm³ of air
 * number of particles >0.5 μm / 0.1 dm³ of air
 * number of particles >1.0 μm / 0.1 dm³ of air
