@@ -5,7 +5,7 @@ Using the PMS5003 particulate matter sensor with Python 3
 :tags: PMS5003, Python 3, FT232H
 :author: Roland Smith
 
-.. Last modified: 2018-04-28T10:59:55+0200
+.. Last modified: 2018-04-29T00:00:43+0200
 
 Introduction
 ------------
@@ -18,7 +18,9 @@ The PMS5003 outputs data over a serial connection. I've used an FT232H
 serial ↔ USB bridge to connect it to my PC.
 
 Except from the hardware, this program uses the pyftdi_ module to connect to
-the device. This module in turn requires pyserial_ and pyusb_.
+the device. This module in turn requires pyserial_ and pyusb_.  The advantage
+of ``pyftdi`` is that it is a pure python solution. It does not require native
+libraries which makes installing it easier.
 
 .. _pyftdi: https://github.com/eblot/pyftdi
 .. _pyusb: https://github.com/pyusb/pyusb
@@ -32,6 +34,14 @@ statement in ``/etc/devd/usb.conf`` that loads ``uftdi`` driver and restarting
 This program has been written for Python 3 on the FreeBSD operating system
 version 11.1. I expect it will work on other POSIX systems, and maybe even on
 ms-windows. But I haven't tested that.
+
+To use the sensor I had to read the manual but also look at e.g. the adafruit
+sample code because some points were not completely clear to me from the
+documentation. In the process I made some annotations in the manual. Since
+there don't seem to be restrictions to modifications and redistribution of
+that manual, I've made my `annotated version`_ available.
+
+.. _annotated version: data/plantower-pms5003-manual_annotated.pdf
 
 
 The program
