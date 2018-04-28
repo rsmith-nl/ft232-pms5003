@@ -5,11 +5,14 @@
 # Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>.
 # SPDX-License-Identifier: MIT
 # Created: 2018-04-11T18:52:43 +0200
-# Last modified: 2018-04-28T10:12:32+0200
+# Last modified: 2018-04-28T10:40:00+0200
 """
 Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
 USB converter.
+
+Connect the 5V from the FT232H to VCC on the PMS5003. Conncect GND to GND.
+Connect D0 to RXD and D1 to TXD. This program does not use the SET or RST pins.
 
 This version does not use the native ftdi driver, but the userspace pyftdi driver.
 The native driver needs to be unloaded for this progam to be used. The user
