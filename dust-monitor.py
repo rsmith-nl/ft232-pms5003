@@ -5,11 +5,14 @@
 # Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>.
 # SPDX-License-Identifier: MIT
 # Created: 2018-04-11T18:52:43 +0200
-# Last modified: 2018-04-27T13:45:45+0200
+# Last modified: 2018-04-28T09:59:23+0200
 """
 Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
 USB converter.
+
+This version does not use the native ftdi driver, but the userspace pyftdi driver.
+The native driver needs to be unloaded for this progam to be used.
 
 This runs the sensor in passive mode. Note that for passive mode,
 both TX and RX must be connected! It logs the data to a file.
@@ -20,9 +23,10 @@ import argparse
 import struct
 import sys
 import time
-import serial
+from serial import SerialException
+import pyftdi.serialext
 
-__version__ = '1.0'
+__version__ = '1.1'
 
 
 def main(argv):
@@ -36,7 +40,7 @@ def main(argv):
     args = process_arguments(argv)
 
     # Open the files
-    ft232h = serial.Serial(args.port, 9600, timeout=1)
+    ft232h = pyftdi.serialext.serial_for_url(args.port, baudrate=9600, timeout=1)
     datafile = open(args.path.format(now), 'w')
 
     # Set the sensor to passive mode.
@@ -95,7 +99,7 @@ def main(argv):
             if cserr:
                 continue
             time.sleep(args.interval)
-    except (serial.serialutil.SerialException, KeyboardInterrupt):
+    except (SerialException, KeyboardInterrupt):
         sys.exit(1)
 
 
@@ -104,15 +108,15 @@ def process_arguments(argv):
     parser.add_argument(
         '-p',
         '--port',
-        default='/dev/cuaU0',
+        default='ftdi://ftdi:232h/1',
         type=str,
-        help='serial port to use (default /dev/cuaU0)')
+        help='serial port to use (default ftdi://ftdi:232h/1)')
     parser.add_argument(
         '-i',
         '--interval',
         default=5,
         type=int,
-        help='interval between measurements (≥5 s, default 5 s)')
+        help='interval between measurements in seconds (≥5 s, default 5 s)')
     parser.add_argument(
         '-v', '--version', action='version', version=__version__)
     parser.add_argument(
