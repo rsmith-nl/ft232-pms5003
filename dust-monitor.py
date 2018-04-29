@@ -5,7 +5,7 @@
 # Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>.
 # SPDX-License-Identifier: MIT
 # Created: 2018-04-11T18:52:43 +0200
-# Last modified: 2018-04-28T10:40:00+0200
+# Last modified: 2018-04-29T14:47:08+0200
 """
 Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
@@ -54,7 +54,7 @@ def main(argv):
     args = process_arguments(argv)
 
     # Open the files
-    ft232h = pyftdi.serialext.serial_for_url(args.port, baudrate=9600, timeout=1)
+    ft232h = pyftdi.serialext.serial_for_url(args.device, baudrate=9600, timeout=1)
     datafile = open(args.path.format(now), 'w')
 
     # Set the sensor to passive mode. See page 15 of the (annotated) manual.
@@ -120,11 +120,11 @@ def main(argv):
 def process_arguments(argv):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        '-p',
-        '--port',
+        '-d',
+        '--device',
         default='ftdi://ftdi:232h/1',
         type=str,
-        help='serial port to use (default ftdi://ftdi:232h/1)')
+        help='FTDI device to use (default "ftdi://ftdi:232h/1")')
     parser.add_argument(
         '-i',
         '--interval',
