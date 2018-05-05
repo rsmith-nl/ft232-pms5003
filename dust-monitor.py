@@ -5,7 +5,7 @@
 # Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>.
 # SPDX-License-Identifier: MIT
 # Created: 2018-04-11T18:52:43 +0200
-# Last modified: 2018-04-29T14:47:08+0200
+# Last modified: 2018-05-05T23:59:13+0200
 """
 Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
@@ -31,7 +31,7 @@ import time
 from serial import SerialException
 import pyftdi.serialext
 
-__version__ = '1.1'
+__version__ = '1.2'
 
 
 # See Appendix II (page 15) of the (annotated) PMS5003 manual.
@@ -53,9 +53,13 @@ def main(argv):
     now = datetime.utcnow().strftime('%FT%TZ')
     args = process_arguments(argv)
 
+    if '{}' in args.path:
+        filename = args.path.format(now)
+    else:
+        filename = args.path
+
     # Open the files
     ft232h = pyftdi.serialext.serial_for_url(args.device, baudrate=9600, timeout=1)
-    datafile = open(args.path.format(now), 'w')
 
     # Set the sensor to passive mode. See page 15 of the (annotated) manual.
     ft232h.write(Cmd.PASSIVE_MODE)
@@ -63,21 +67,21 @@ def main(argv):
     ft232h.flushInput()
 
     # Write datafile header.
-    datafile.write(
-        '# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n'.format(
-            now))
-    datafile.write('# Per line, the data items are:\n')
-    datafile.write('# * UTC date and time in ISO8601 format\n')
-    datafile.write('# * PM 1.0 in μg/m³\n')
-    datafile.write('# * PM 2.5 in μg/m³\n')
-    datafile.write('# * PM 10 in μg/m³\n')
-    datafile.write('# * number of particles >0.3 μm / 0.1 dm³ of air\n')
-    datafile.write('# * number of particles >0.5 μm / 0.1 dm³ of air\n')
-    datafile.write('# * number of particles >1.0 μm / 0.1 dm³ of air\n')
-    datafile.write('# * number of particles >2.5 μm / 0.1 dm³ of air\n')
-    datafile.write('# * number of particles >5 μm / 0.1 dm³ of air\n')
-    datafile.write('# * number of particles >10 μm / 0.1 dm³ of air\n')
-    datafile.flush()
+    with open(filename, 'a') as datafile:
+        datafile.write(
+            '# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n'.format(
+                now))
+        datafile.write('# Per line, the data items are:\n')
+        datafile.write('# * UTC date and time in ISO8601 format\n')
+        datafile.write('# * PM 1.0 in μg/m³\n')
+        datafile.write('# * PM 2.5 in μg/m³\n')
+        datafile.write('# * PM 10 in μg/m³\n')
+        datafile.write('# * number of particles >0.3 μm / 0.1 dm³ of air\n')
+        datafile.write('# * number of particles >0.5 μm / 0.1 dm³ of air\n')
+        datafile.write('# * number of particles >1.0 μm / 0.1 dm³ of air\n')
+        datafile.write('# * number of particles >2.5 μm / 0.1 dm³ of air\n')
+        datafile.write('# * number of particles >5 μm / 0.1 dm³ of air\n')
+        datafile.write('# * number of particles >10 μm / 0.1 dm³ of air\n')
 
     # Read and write the data.
     try:
@@ -88,14 +92,14 @@ def main(argv):
             data = ft232h.read(32)
             now = datetime.utcnow().strftime('%FT%TZ ')
             if len(data) != 32 and not data.startswith(b'BM'):
-                datafile.write('# ' + now + 'read error\n')
-                datafile.flush()
+                with open(filename, 'a') as datafile:
+                    datafile.write('# ' + now + 'read error\n')
                 continue
             try:
                 numbers = struct.unpack('>HHHHHHHHHHHHHHHH', data)
             except struct.error:
-                datafile.write('# ' + now + 'unpack error\n')
-                datafile.flush()
+                with open(filename, 'a') as datafile:
+                    datafile.write('# ' + now + 'unpack error\n')
                 continue
             # The data-sheet says "Low 8 bits" in the checksum calculation.
             # But looking at the numbers that doesn't match. It looks like
@@ -108,8 +112,8 @@ def main(argv):
             # First is PM atmospheric, second is raw counts.
             items = numbers[5:8] + numbers[8:14]
             line = now + ' '.join(str(num) for num in items) + cserr + '\n'
-            datafile.write(line)
-            datafile.flush()
+            with open(filename, 'a') as datafile:
+                datafile.write(line)
             if cserr:
                 continue
             time.sleep(args.interval)
@@ -136,7 +140,8 @@ def process_arguments(argv):
     parser.add_argument(
         'path',
         nargs=1,
-        help=r'path template for the data file. Should contain {}. '
+        help=r'path template for the data file. If it contains "{}", '
+        r'the datetime the program was started will be added. '
         r'For example "/tmp/dust-monitor-{}.d"')
     args = parser.parse_args(argv)
     args.path = args.path[0]
