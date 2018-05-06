@@ -68,9 +68,7 @@ def main(argv):
 
     # Write datafile header.
     with open(filename, 'a') as datafile:
-        datafile.write(
-            '# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n'.format(
-                now))
+        datafile.write('# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n'.format(now))
         datafile.write('# Per line, the data items are:\n')
         datafile.write('# * UTC date and time in ISO8601 format\n')
         datafile.write('# * PM 1.0 in μg/m³\n')
@@ -128,21 +126,23 @@ def process_arguments(argv):
         '--device',
         default='ftdi://ftdi:232h/1',
         type=str,
-        help='FTDI device to use (default "ftdi://ftdi:232h/1")')
+        help='FTDI device to use (default "ftdi://ftdi:232h/1")'
+    )
     parser.add_argument(
         '-i',
         '--interval',
         default=5,
         type=int,
-        help='interval between measurements in seconds (≥5 s, default 5 s)')
-    parser.add_argument(
-        '-v', '--version', action='version', version=__version__)
+        help='interval between measurements in seconds (≥5 s, default 5 s)'
+    )
+    parser.add_argument('-v', '--version', action='version', version=__version__)
     parser.add_argument(
         'path',
         nargs=1,
         help=r'path template for the data file. If it contains "{}", '
         r'the datetime the program was started will be added. '
-        r'For example "/tmp/dust-monitor-{}.d"')
+        r'For example "/tmp/dust-monitor-{}.d"'
+    )
     args = parser.parse_args(argv)
     args.path = args.path[0]
     if not args.path or r'{}' not in args.path:
