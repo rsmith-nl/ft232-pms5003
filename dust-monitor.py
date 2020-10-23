@@ -31,16 +31,16 @@ import time
 from serial import SerialException
 import pyftdi.serialext
 
-__version__ = '1.2'
+__version__ = "1.2"
 
 
 # See Appendix II (page 15) of the (annotated) PMS5003 manual.
 class Cmd(Enum):
-    PASSIVE_READ = b'\x42\x4d\xe2\x00\x00\x01\x71'
-    PASSIVE_MODE = b'\x42\x4d\xe1\x00\x00\x01\x70'
-    ACTIVE_MODE = b'\x42\x4d\xe1\x00\x01\x01\x71'
-    SLEEP = b'\x42\x4d\xe4\x00\x00\x01\x73'
-    WAKEUP = b'\x42\x4d\xe4\x00\x01\x01\x74'
+    PASSIVE_READ = b"\x42\x4d\xe2\x00\x00\x01\x71"
+    PASSIVE_MODE = b"\x42\x4d\xe1\x00\x00\x01\x70"
+    ACTIVE_MODE = b"\x42\x4d\xe1\x00\x01\x01\x71"
+    SLEEP = b"\x42\x4d\xe4\x00\x00\x01\x73"
+    WAKEUP = b"\x42\x4d\xe4\x00\x01\x01\x74"
 
 
 def main(argv):
@@ -50,10 +50,10 @@ def main(argv):
     Arguments:
         argv: command line arguments
     """
-    now = datetime.utcnow().strftime('%FT%TZ')
+    now = datetime.utcnow().strftime("%FT%TZ")
     args = process_arguments(argv)
 
-    if '{}' in args.path:
+    if "{}" in args.path:
         filename = args.path.format(now)
     else:
         filename = args.path
@@ -67,19 +67,21 @@ def main(argv):
     ft232h.flushInput()
 
     # Write datafile header.
-    with open(filename, 'a') as datafile:
-        datafile.write('# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n'.format(now))
-        datafile.write('# Per line, the data items are:\n')
-        datafile.write('# * UTC date and time in ISO8601 format\n')
-        datafile.write('# * PM 1.0 in μg/m³\n')
-        datafile.write('# * PM 2.5 in μg/m³\n')
-        datafile.write('# * PM 10 in μg/m³\n')
-        datafile.write('# * number of particles >0.3 μm / 0.1 dm³ of air\n')
-        datafile.write('# * number of particles >0.5 μm / 0.1 dm³ of air\n')
-        datafile.write('# * number of particles >1.0 μm / 0.1 dm³ of air\n')
-        datafile.write('# * number of particles >2.5 μm / 0.1 dm³ of air\n')
-        datafile.write('# * number of particles >5 μm / 0.1 dm³ of air\n')
-        datafile.write('# * number of particles >10 μm / 0.1 dm³ of air\n')
+    with open(filename, "a") as datafile:
+        datafile.write(
+            "# PMS5003 data. (passive mode)\n# Started monitoring at {}.\n".format(now)
+        )
+        datafile.write("# Per line, the data items are:\n")
+        datafile.write("# * UTC date and time in ISO8601 format\n")
+        datafile.write("# * PM 1.0 in μg/m³\n")
+        datafile.write("# * PM 2.5 in μg/m³\n")
+        datafile.write("# * PM 10 in μg/m³\n")
+        datafile.write("# * number of particles >0.3 μm / 0.1 dm³ of air\n")
+        datafile.write("# * number of particles >0.5 μm / 0.1 dm³ of air\n")
+        datafile.write("# * number of particles >1.0 μm / 0.1 dm³ of air\n")
+        datafile.write("# * number of particles >2.5 μm / 0.1 dm³ of air\n")
+        datafile.write("# * number of particles >5 μm / 0.1 dm³ of air\n")
+        datafile.write("# * number of particles >10 μm / 0.1 dm³ of air\n")
 
     # Read and write the data.
     try:
@@ -88,29 +90,29 @@ def main(argv):
             ft232h.write(Cmd.PASSIVE_READ)
             # Read data
             data = ft232h.read(32)
-            now = datetime.utcnow().strftime('%FT%TZ ')
-            if len(data) != 32 and not data.startswith(b'BM'):
-                with open(filename, 'a') as datafile:
-                    datafile.write('# ' + now + 'read error\n')
+            now = datetime.utcnow().strftime("%FT%TZ ")
+            if len(data) != 32 and not data.startswith(b"BM"):
+                with open(filename, "a") as datafile:
+                    datafile.write("# " + now + "read error\n")
                 continue
             try:
-                numbers = struct.unpack('>HHHHHHHHHHHHHHHH', data)
+                numbers = struct.unpack(">HHHHHHHHHHHHHHHH", data)
             except struct.error:
-                with open(filename, 'a') as datafile:
-                    datafile.write('# ' + now + 'unpack error\n')
+                with open(filename, "a") as datafile:
+                    datafile.write("# " + now + "unpack error\n")
                 continue
             # The data-sheet says "Low 8 bits" in the checksum calculation.
             # But looking at the numbers that doesn't match. It looks like
             # that is a typo?
             cksum = sum(data[0:30])
             if cksum != numbers[-1]:
-                cserr = ' # checksum mismatch'
+                cserr = " # checksum mismatch"
             else:
-                cserr = ''
+                cserr = ""
             # First is PM atmospheric, second is raw counts.
             items = numbers[5:8] + numbers[8:14]
-            line = now + ' '.join(str(num) for num in items) + cserr + '\n'
-            with open(filename, 'a') as datafile:
+            line = now + " ".join(str(num) for num in items) + cserr + "\n"
+            with open(filename, "a") as datafile:
                 datafile.write(line)
             if cserr:
                 continue
@@ -122,30 +124,30 @@ def main(argv):
 def process_arguments(argv):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        '-d',
-        '--device',
-        default='ftdi://ftdi:232h/1',
+        "-d",
+        "--device",
+        default="ftdi://ftdi:232h/1",
         type=str,
-        help='FTDI device to use (default "ftdi://ftdi:232h/1")'
+        help='FTDI device to use (default "ftdi://ftdi:232h/1")',
     )
     parser.add_argument(
-        '-i',
-        '--interval',
+        "-i",
+        "--interval",
         default=5,
         type=int,
-        help='interval between measurements in seconds (≥5 s, default 5 s)'
+        help="interval between measurements in seconds (≥5 s, default 5 s)",
     )
-    parser.add_argument('-v', '--version', action='version', version=__version__)
+    parser.add_argument("-v", "--version", action="version", version=__version__)
     parser.add_argument(
-        'path',
+        "path",
         nargs=1,
         help=r'path template for the data file. If it contains "{}", '
-        r'the datetime the program was started will be added. '
-        r'For example "/tmp/dust-monitor-{}.d"'
+        r"the datetime the program was started will be added. "
+        r'For example "/tmp/dust-monitor-{}.d"',
     )
     args = parser.parse_args(argv)
     args.path = args.path[0]
-    if not args.path or r'{}' not in args.path:
+    if not args.path or r"{}" not in args.path:
         parser.print_help()
         sys.exit(0)
     if args.interval < 5:
@@ -153,5 +155,5 @@ def process_arguments(argv):
     return args
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv[1:])
