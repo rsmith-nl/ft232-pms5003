@@ -5,7 +5,7 @@
 # Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>.
 # SPDX-License-Identifier: MIT
 # Created: 2018-04-11T18:52:43 +0200
-# Last modified: 2018-05-05T23:59:13+0200
+# Last modified: 2023-10-29T18:07:41+0100
 """
 Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
@@ -23,7 +23,6 @@ both TX and RX must be connected! It logs the data to a file.
 """
 
 from datetime import datetime
-from enum import Enum
 import argparse
 import struct
 import sys
@@ -31,16 +30,15 @@ import time
 from serial import SerialException
 import pyftdi.serialext
 
-__version__ = "1.2"
+__version__ = "2023.10.29"
 
 
 # See Appendix II (page 15) of the (annotated) PMS5003 manual.
-class Cmd(Enum):
-    PASSIVE_READ = b"\x42\x4d\xe2\x00\x00\x01\x71"
-    PASSIVE_MODE = b"\x42\x4d\xe1\x00\x00\x01\x70"
-    ACTIVE_MODE = b"\x42\x4d\xe1\x00\x01\x01\x71"
-    SLEEP = b"\x42\x4d\xe4\x00\x00\x01\x73"
-    WAKEUP = b"\x42\x4d\xe4\x00\x01\x01\x74"
+PASSIVE_READ = b"\x42\x4d\xe2\x00\x00\x01\x71"
+PASSIVE_MODE = b"\x42\x4d\xe1\x00\x00\x01\x70"
+ACTIVE_MODE = b"\x42\x4d\xe1\x00\x01\x01\x71"
+SLEEP = b"\x42\x4d\xe4\x00\x00\x01\x73"
+WAKEUP = b"\x42\x4d\xe4\x00\x01\x01\x74"
 
 
 def main(argv):
@@ -62,7 +60,7 @@ def main(argv):
     ft232h = pyftdi.serialext.serial_for_url(args.device, baudrate=9600, timeout=1)
 
     # Set the sensor to passive mode. See page 15 of the (annotated) manual.
-    ft232h.write(Cmd.PASSIVE_MODE)
+    ft232h.write(PASSIVE_MODE)
     # Drop all exesting active mode data.
     ft232h.flushInput()
 
@@ -86,9 +84,8 @@ def main(argv):
     # Read and write the data.
     try:
         while True:
-            # Request data
-            ft232h.write(Cmd.PASSIVE_READ)
-            # Read data
+            # Request and read data
+            ft232h.write(PASSIVE_READ)
             data = ft232h.read(32)
             now = datetime.utcnow().strftime("%FT%TZ ")
             if len(data) != 32 and not data.startswith(b"BM"):
