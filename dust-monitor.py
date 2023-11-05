@@ -5,7 +5,7 @@
 # Copyright © 2018 R.F. Smith <rsmith@xs4all.nl>.
 # SPDX-License-Identifier: MIT
 # Created: 2018-04-11T18:52:43 +0200
-# Last modified: 2023-10-29T18:07:41+0100
+# Last modified: 2023-11-04T20:05:20+0100
 """
 Monitoring program for the plantower PMS5003 air monitoring sensor.
 The sensor is connected to the computer via an FT232H, used as a serial to
@@ -59,6 +59,7 @@ def main(argv):
     # Open the files
     ft232h = pyftdi.serialext.serial_for_url(args.device, baudrate=9600, timeout=1)
 
+    ft232h.write(WAKEUP)
     # Set the sensor to passive mode. See page 15 of the (annotated) manual.
     ft232h.write(PASSIVE_MODE)
     # Drop all exesting active mode data.
@@ -88,15 +89,13 @@ def main(argv):
             ft232h.write(PASSIVE_READ)
             data = ft232h.read(32)
             now = datetime.utcnow().strftime("%FT%TZ ")
-            if len(data) != 32 and not data.startswith(b"BM"):
-                with open(filename, "a") as datafile:
-                    datafile.write("# " + now + "read error\n")
+            if len(data) != 32:
+                continue
+            if not data.startswith(b"BM"):
                 continue
             try:
                 numbers = struct.unpack(">HHHHHHHHHHHHHHHH", data)
             except struct.error:
-                with open(filename, "a") as datafile:
-                    datafile.write("# " + now + "unpack error\n")
                 continue
             # The data-sheet says "Low 8 bits" in the checksum calculation.
             # But looking at the numbers that doesn't match. It looks like
